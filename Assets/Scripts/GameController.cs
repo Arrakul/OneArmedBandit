@@ -7,7 +7,7 @@ public class GameController : MonoBehaviour
 {
     public Text theAmount;
     public Text TotalWin;
-
+    
     public Sprite[] winSprites;
     public Image[] slots;
 
@@ -38,11 +38,22 @@ public class GameController : MonoBehaviour
 
     public void BanditRun()
     {
-        amount -= 100;
+        int price = 25;
+        for (int i = 0; i < SettingsBandit.Instance.dataForFormulas.toggles.Length; i++)
+        {
+            if (SettingsBandit.Instance.dataForFormulas.toggles[i].isOn)
+            {
+                price += 25;
+            }
+        }
+        
+        amount -= price;
         UpdateText();
         
         for (int i = 0; i < slots.Length; i++)
         {
+            AnimationController.Instance.RotationSlots(slots[i].transform);
+            
             int index = Random.Range(0, winSprites.Length);
             slots[i].sprite = winSprites[index];
             massIndexSlots[i] = index + 1;
@@ -56,6 +67,7 @@ public class GameController : MonoBehaviour
     void CheckWinGame()
     {
         int prize = CheckWin.GetWinAmount();
+        AnimationController.Instance.WinGame(prize.ToString());
         Debug.Log($"You win : {prize}$");
 
         amount += prize;
