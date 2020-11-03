@@ -6,7 +6,7 @@ public static class CheckWin
     private static int[,] MatrixSlots;
     public static int Joker;
 
-    struct MyStruct
+    struct lineСombination
     {
         public int Value;
         public int Number;
@@ -35,9 +35,11 @@ public static class CheckWin
 
         prize = CheckingForJokers();
         prize += CheckFullMatrix();
-        prize += CheckingHorizontalLines();
-        prize+= CheckingVerticalLines();
-        prize += CheckingTheFirstCrosspiece();
+        
+        if(SettingsBandit.Instance.dataForFormulas.toggles[0].isOn) prize += CheckingVerticalLines();
+        if(SettingsBandit.Instance.dataForFormulas.toggles[1].isOn) prize += CheckingHorizontalLines();
+        if(SettingsBandit.Instance.dataForFormulas.toggles[2].isOn) prize += CheckingTheFirstCrosspiece();
+        
         prize += CheckingTheSecondCrosspiece();
 
         return prize;
@@ -57,8 +59,8 @@ public static class CheckWin
                 }
             }
         }
-        
-        return number * 10;
+
+        return number * SettingsBandit.Instance.dataForFormulas.GlobalMultiplier;
     }
 
     private static int CheckFullMatrix()
@@ -82,9 +84,12 @@ public static class CheckWin
 
         if (win)
         {
-            prize = (value * 3) * 8 * 10;
-            prize += (value * 6) * 10 * 2;
-            prize *= 2;
+            int numberLines = MatrixSlots.GetLength(0) + MatrixSlots.GetLength(1) + 2;
+            int numberElementsCross = MatrixSlots.GetLength(0) + MatrixSlots.GetLength(1);
+            
+            prize = (value * MatrixSlots.GetLength(0)) * numberLines * SettingsBandit.Instance.dataForFormulas.GlobalMultiplier;
+            prize += (value * numberElementsCross) * SettingsBandit.Instance.dataForFormulas.Xn * SettingsBandit.Instance.dataForFormulas.GlobalMultiplier;
+            prize *= SettingsBandit.Instance.dataForFormulas.Xn;
         }
         return prize;
     }
@@ -103,7 +108,7 @@ public static class CheckWin
             }
 
             var valueForPrize = CheckLine(line);
-            prize += valueForPrize.Value * valueForPrize.Number * 10;
+            prize += valueForPrize.Value * valueForPrize.Number * SettingsBandit.Instance.dataForFormulas.GlobalMultiplier;
         }
         return prize;
     }
@@ -122,7 +127,7 @@ public static class CheckWin
             }
 
             var valueForPrize = CheckLine(line);
-            prize += valueForPrize.Value * valueForPrize.Number * 10;
+            prize += valueForPrize.Value * valueForPrize.Number * SettingsBandit.Instance.dataForFormulas.GlobalMultiplier;
         }
         return prize;
     }
@@ -132,7 +137,7 @@ public static class CheckWin
         int prize = 0;
         int number = 0;
         int I = MatrixSlots.GetLength(0) / 2;
-        int J= MatrixSlots.GetLength(1) / 2;;
+        int J = MatrixSlots.GetLength(1) / 2;
 
         int value = MatrixSlots[I, J];
 
@@ -154,7 +159,7 @@ public static class CheckWin
 
         if (prize != -1)
         {
-            prize = value * number * 10 * 2;
+            prize = value * number * SettingsBandit.Instance.dataForFormulas.Xn * SettingsBandit.Instance.dataForFormulas.GlobalMultiplier;
         }
         else
         {
@@ -187,7 +192,7 @@ public static class CheckWin
         if (prize != -1)
         {
             prize = prize1 + prize2;
-            prize *= 2;
+            prize *= SettingsBandit.Instance.dataForFormulas.Xn;
         }
         else
         {
@@ -208,7 +213,7 @@ public static class CheckWin
         }
 
         var valueForPrize = CheckLine(line);
-        prize += valueForPrize.Value * valueForPrize.Number * 10;
+        prize += valueForPrize.Value * valueForPrize.Number * SettingsBandit.Instance.dataForFormulas.GlobalMultiplier;;
         return prize;
     }
 
@@ -223,16 +228,16 @@ public static class CheckWin
         }
 
         var valueForPrize = CheckLine(line);
-        prize += valueForPrize.Value * valueForPrize.Number * 10;
+        prize += valueForPrize.Value * valueForPrize.Number * SettingsBandit.Instance.dataForFormulas.GlobalMultiplier;
         return prize;
     }
 
-    private static MyStruct CheckLine(params int[] line)
+    private static lineСombination CheckLine(params int[] line)
     {
         int newValue = 0;
         int newNumber = 0;
 
-        var valueForPrize = new MyStruct();
+        var valueForPrize = new lineСombination();
 
         for (int i = 0; i < line.Length; i++)
         {

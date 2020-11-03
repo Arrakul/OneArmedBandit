@@ -7,7 +7,7 @@ public class GameController : MonoBehaviour
 {
     public Text theAmount;
     public Text TotalWin;
-
+    
     public Sprite[] winSprites;
     public Image[] slots;
 
@@ -38,7 +38,16 @@ public class GameController : MonoBehaviour
 
     public void BanditRun()
     {
-        amount -= 100;
+        int price = 25;
+        for (int i = 0; i < SettingsBandit.Instance.dataForFormulas.toggles.Length; i++)
+        {
+            if (SettingsBandit.Instance.dataForFormulas.toggles[i].isOn)
+            {
+                price += 25;
+            }
+        }
+        
+        amount -= price;
         UpdateText();
         
         for (int i = 0; i < slots.Length; i++)
