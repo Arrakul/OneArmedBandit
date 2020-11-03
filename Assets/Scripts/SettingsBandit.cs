@@ -12,7 +12,6 @@ public class SettingsBandit : MonoBehaviour
 
     void Awake()
     {
-        DontDestroyOnLoad(gameObject);
         if (Instance == null)
         {
             Instance = this;

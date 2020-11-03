@@ -52,6 +52,8 @@ public class GameController : MonoBehaviour
         
         for (int i = 0; i < slots.Length; i++)
         {
+            AnimationController.Instance.RotationSlots(slots[i].transform);
+            
             int index = Random.Range(0, winSprites.Length);
             slots[i].sprite = winSprites[index];
             massIndexSlots[i] = index + 1;
@@ -65,6 +67,7 @@ public class GameController : MonoBehaviour
     void CheckWinGame()
     {
         int prize = CheckWin.GetWinAmount();
+        AnimationController.Instance.WinGame(prize.ToString());
         Debug.Log($"You win : {prize}$");
 
         amount += prize;
