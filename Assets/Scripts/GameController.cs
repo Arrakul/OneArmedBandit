@@ -60,7 +60,7 @@ public class GameController : MonoBehaviour
         }
 
         CheckWin.Joker = winSprites.Length;
-        CheckWin.UpdateMatrix(massIndexSlots);
+        CheckWin.UpdateMatrix(massIndexSlots, slots);
         CheckWinGame();
     }
 

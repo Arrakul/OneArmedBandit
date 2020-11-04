@@ -1,10 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public static class CheckWin
 {
     private static int[,] MatrixSlots;
     public static int Joker;
+    
+    private static Image[,] ImageSlots;
 
     struct lineСombination
     {
@@ -12,10 +16,17 @@ public static class CheckWin
         public int Number;
     }
     
-    public static void UpdateMatrix(params int[] massIndexSlots)
+    struct Index
+    {
+        public int I;
+        public int J;
+    }
+    
+    public static void UpdateMatrix(int[] massIndexSlots, Image[] slots)
     {
         int lengthMatrix = (int) Math.Sqrt(massIndexSlots.Length);
         MatrixSlots = new int[lengthMatrix, lengthMatrix];
+        ImageSlots = new Image[lengthMatrix, lengthMatrix];
         int k = 0;
         
         for (int i = 0; i < MatrixSlots.GetLength(0); i++)
@@ -23,8 +34,12 @@ public static class CheckWin
             for (int j = 0; j < MatrixSlots.GetLength(1); j++)
             {
                 MatrixSlots[i, j] = massIndexSlots[k];
-                //Debug.Log($"Matrix{k} : " + MatrixSlots[i, j]);
+                ImageSlots[i, j] = slots[k];
+                
+                slots[k].color = Color.white;
                 k++;
+                
+                //Debug.Log($"Matrix{k} : " + MatrixSlots[i, j]);
             }
         }
     }
@@ -48,6 +63,7 @@ public static class CheckWin
     private static int CheckingForJokers()
     {
         int number = 0;
+        List<Index> indexSlots = new List<Index>();
 
         for (int i = 0; i < MatrixSlots.GetLength(0); i++)
         {
@@ -56,10 +72,12 @@ public static class CheckWin
                 if (MatrixSlots[i,j] == Joker)
                 {
                     number++;
+                    indexSlots.Add(new Index() {I = i, J = j});
                 }
             }
         }
 
+        if(number > 0) PaintingWinningSlots(Color.magenta, indexSlots.ToArray());
         return number * SettingsBandit.Instance.dataForFormulas.GlobalMultiplier;
     }
 
@@ -101,13 +119,17 @@ public static class CheckWin
         for (int i = 0; i < MatrixSlots.GetLength(0); i++)
         {
             int[] line = new int[MatrixSlots.GetLength(1)];
+            Index[] indexSlots = new Index[MatrixSlots.GetLength(0)];
             
             for (int j = 0; j < MatrixSlots.GetLength(1); j++)
             {
                 line[j] = MatrixSlots[i, j];
+                indexSlots[j].I = i;
+                indexSlots[j].J = j;
             }
 
             var valueForPrize = CheckLine(line);
+            if(valueForPrize.Number > 1) PaintingWinningSlots(Color.green, indexSlots);
             prize += valueForPrize.Value * valueForPrize.Number * SettingsBandit.Instance.dataForFormulas.GlobalMultiplier;
         }
         return prize;
@@ -120,13 +142,17 @@ public static class CheckWin
         for (int j = 0; j < MatrixSlots.GetLength(1); j++)
         {
             int[] line = new int[MatrixSlots.GetLength(0)];
+            Index[] indexSlots = new Index[MatrixSlots.GetLength(0)];
             
             for (int i = 0; i < MatrixSlots.GetLength(0); i++)
             {
                 line[i] = MatrixSlots[i, j];
+                indexSlots[i].I = i;
+                indexSlots[i].J = j;
             }
 
             var valueForPrize = CheckLine(line);
+            if(valueForPrize.Number > 1) PaintingWinningSlots(Color.yellow, indexSlots);
             prize += valueForPrize.Value * valueForPrize.Number * SettingsBandit.Instance.dataForFormulas.GlobalMultiplier;
         }
         return prize;
@@ -138,6 +164,8 @@ public static class CheckWin
         int number = 0;
         int I = MatrixSlots.GetLength(0) / 2;
         int J = MatrixSlots.GetLength(1) / 2;
+        
+        Index[] indexSlots = new Index[MatrixSlots.GetLength(0)];
 
         int value = MatrixSlots[I, J];
 
@@ -152,6 +180,8 @@ public static class CheckWin
                 }
                 else if((i == I || j == J) && MatrixSlots[i,j] == value)
                 {
+                    indexSlots[i].I = i;
+                    indexSlots[i].J = j;
                     number++;
                 }
             }
@@ -159,6 +189,7 @@ public static class CheckWin
 
         if (prize != -1)
         {
+            PaintingWinningSlots(Color.red, indexSlots);
             prize = value * number * SettingsBandit.Instance.dataForFormulas.Xn * SettingsBandit.Instance.dataForFormulas.GlobalMultiplier;
         }
         else
@@ -176,6 +207,7 @@ public static class CheckWin
         int prize2= 0;
 
         int value = MatrixSlots[0, 0];
+        Index[] indexSlots = new Index[MatrixSlots.GetLength(0)];
 
         for (int i = 0; i < MatrixSlots.GetLength(0); i++)
         {
@@ -206,13 +238,17 @@ public static class CheckWin
     {
         int prize = 0;
         int[] line = new int[MatrixSlots.GetLength(0)];
+        Index[] indexSlots = new Index[MatrixSlots.GetLength(0)];
 
         for (int i = 0; i < MatrixSlots.GetLength(0); i++)
         {
             line[i] = MatrixSlots[i, i];
+            indexSlots[i].I = i;
+            indexSlots[i].J = i;
         }
 
         var valueForPrize = CheckLine(line);
+        if(valueForPrize.Number > 1) PaintingWinningSlots(Color.blue, indexSlots);
         prize += valueForPrize.Value * valueForPrize.Number * SettingsBandit.Instance.dataForFormulas.GlobalMultiplier;;
         return prize;
     }
@@ -221,18 +257,22 @@ public static class CheckWin
     {
         int prize = 0;
         int[] line = new int[MatrixSlots.GetLength(0)];
+        Index[] indexSlots = new Index[MatrixSlots.GetLength(0)];
 
         for (int i = 0; i < MatrixSlots.GetLength(0); i++)
         {
             line[i] = MatrixSlots[i, (MatrixSlots.GetLength(0)-1) - i];
+            indexSlots[i].I = i;
+            indexSlots[i].J = (MatrixSlots.GetLength(0)-1) - i;
         }
 
         var valueForPrize = CheckLine(line);
+        if(valueForPrize.Number > 1) PaintingWinningSlots(Color.blue, indexSlots);
         prize += valueForPrize.Value * valueForPrize.Number * SettingsBandit.Instance.dataForFormulas.GlobalMultiplier;
         return prize;
     }
 
-    private static lineСombination CheckLine(params int[] line)
+    private static lineСombination CheckLine(int[] line)
     {
         int newValue = 0;
         int newNumber = 0;
@@ -260,5 +300,13 @@ public static class CheckWin
         }
         
         return valueForPrize;
+    }
+
+    private static void PaintingWinningSlots(Color color, Index[] index)
+    {
+        for (int i = 0; i < index.Length; i++)
+        {
+            ImageSlots[index[i].I, index[i].J].color = color;
+        }
     }
 }
