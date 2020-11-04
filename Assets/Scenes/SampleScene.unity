@@ -2672,7 +2672,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dataForFormulas:
-    GlobalMultiplier: 1
+    GlobalMultiplier: 2
     Xn: 2
     toggles:
     - {fileID: 659321353}
